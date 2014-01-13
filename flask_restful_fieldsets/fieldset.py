@@ -220,5 +220,5 @@ class Fieldset(FieldsetBase):
         return wrapper
 
     @classmethod
-    def do_marshall(cls, *args, **kwargs):
+    def do_marshal(cls, *args, **kwargs):
         return cls(*args, **kwargs)

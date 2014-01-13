@@ -222,7 +222,7 @@ class TestSimpleFieldsetMarshallDecorator(unittest.TestCase):
         class MyFieldset(fieldset.Fieldset):
             pass
 
-        @MyFieldset.do_marshall()
+        @MyFieldset.do_marshal()
         def foo():
             return {"test01": 1, "test02": "bla", "test04": False}
 
@@ -237,7 +237,7 @@ class TestSimpleFieldsetMarshallDecorator(unittest.TestCase):
             test02 = fields.String
             test04 = fields.Boolean
 
-        @MyFieldset.do_marshall()
+        @MyFieldset.do_marshal()
         def foo():
             return {"test01": 1, "test02": "bla", "test03": 3, "test04": False}
 
@@ -258,7 +258,7 @@ class TestSimpleFieldsetMarshallDecorator(unittest.TestCase):
             test02 = fields.String
             test04 = fields.Boolean
 
-        @MyFieldset.do_marshall()
+        @MyFieldset.do_marshal()
         def foo():
             return {"test01": 1, "test02": "bla", "test03": 3, "test04": False}
 
@@ -278,7 +278,7 @@ class TestSimpleFieldsetMarshallDecorator(unittest.TestCase):
             test02 = fields.String
             test04 = fields.Boolean
 
-        @MyFieldset.do_marshall()
+        @MyFieldset.do_marshal()
         def foo():
             return {"test01": 1, "test02": "bla", "test03": 3, "test04": False}
 
