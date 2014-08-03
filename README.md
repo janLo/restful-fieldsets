@@ -4,5 +4,5 @@ This is an extension to the [Flask-RESTful](http://flask-restful.readthedocs.org
 module to build fieldsets similar to [WTForm](http://wtforms.readthedocs.org/en/latest/) forms
 for the response marshalling.
 
-See the tests how to use it.
+Read the docstring documentation to get a description how it can be used.
 
