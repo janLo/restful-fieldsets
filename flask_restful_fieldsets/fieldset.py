@@ -152,6 +152,85 @@ class FieldSetParser(object):
 
 
 class Fieldset(FieldsetBase):
+    """This implements a base class for flask-restful fieldsets.
+
+    It works like WTForm forms:
+
+        class MyFieldSet(Fieldset):
+            member_a = fields.String
+            member_b = fields.Integer(attribute="foobar")
+            ...
+
+    You inherit from this class and defines a set of Fields. In
+    your resource vou can marshall your response using this field
+    ad marshalling decorator:
+
+        class MyResource(Resource):
+            @marshal_with_fieldset(MyFieldSet)
+            def get(self):
+                ...
+
+    Fieldsets can be nested to represent arbitrary object hierarchies.
+    The nesting can also contain lists of nested fieldsets. So you can
+    provide a Thread of a discussion forum and the posts as a list of
+    post fieldsets in a member of the thread fieldset. To nest fieldsets
+    use the OptionalNestedField:
+
+        class MyNestedFieldset(Fieldset):
+            id_value = fields.Integer
+            ...
+
+        class MyFieldSet(Fieldset):
+            plain_member = fields.String
+            nested_member = OptionalNestedField(MyNestedFieldset,
+                                                "id_value")
+            ...
+
+    To have Lists of Nested fields use simply the list field:
+
+        class MyFieldSet(Fieldset):
+            plain_member = fields.String
+            nested_member = fields.List(
+                                OptionalNestedField(MyNestedFieldset,
+                                                    "id_value"))
+            ...
+
+    The marshalling configuration can be changed by the user of your
+    api by selecting the fields he wants. this is done by using two
+    query args:
+    * fields - let the user select the fields to retrieve. If there
+               are nested elements they can be specified by using a
+               dot as separator. So if you have a 'user' field that
+               contains a user-struct the api-user can specify to
+               get the 'user.name' field.
+    * embedd - let the user choose if a nested fieldset should be
+               embedded or not. If a nested value is not embedded,
+               a id-value will be returned. This is the 'plain_key'
+               in the OptionalNestedField that is used to get a
+               value from the nested object.
+
+    Both keywords are configureable within a Meta subclass. The default
+    is 'fields' and 'embedd':
+
+        class MyFieldSet(Fieldset):
+            class Meta:
+                fields_kw = "myfields"
+                embedd_kw = "myembedd"
+            ...
+
+    The meta can also be used to define default fields and default
+    embedded fieldsets (if the user does not specify anything):
+
+        class MyFieldSet(Fieldset):
+            class Meta:
+                default_fields = None
+                default_embedd = None
+            ...
+
+    If no Meta is given or the defaults are set to None then all
+    fields will be in in the default set. If you want to omit all
+    ields by default use an empty list as default.
+    """
     Meta = DefaultMeta
 
     def __init__(self, *args, **kwargs):
