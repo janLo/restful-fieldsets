@@ -25,9 +25,20 @@ class OptionalNestedField(fields.Raw):
 
 class ObjectMemberField(fields.Raw):
     """Get a member value from the value object as field value
+
+    Use this if your attribute is an object but you only need one
+    member from it. It extracts teh member and optionally chain
+    another field format() method.
     """
 
     def __init__(self, member, default=None, attribute=None, member_field=None):
+        """Initialize the ObjectMemberField
+
+        :param member: The member in the object that should be used
+        :param default: The default value
+        :param attribute: The attribute to work on
+        :param member_field: A flask restful field that should be used to format the member
+        """
         super().__init__(default=default, attribute=attribute)
         self.member = member
         self.member_field = member_field
