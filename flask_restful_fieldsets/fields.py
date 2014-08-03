@@ -2,6 +2,16 @@ from flask.ext.restful import fields
 
 
 class OptionalNestedField(fields.Raw):
+    """This can be used to nest Fieldsets into each other.
+
+    It works like the Nested field but uses Fieldsets as nested
+    structure instead of a simple dict. The user can select
+    fields from the nested set by prefixing the fieldname with
+    the name of the field in the parent set.
+
+    The "plain_key" argument specify which attribute should be
+    used if the user wont embedd the set.
+    """
     _optional_nested = True
 
     def __init__(self, nested, plain_key, default=None, attribute=None, allow_none=False, plain_field=None):
