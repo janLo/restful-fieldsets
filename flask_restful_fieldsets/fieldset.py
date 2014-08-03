@@ -69,8 +69,11 @@ class FieldsetBase(object, metaclass=FieldsetMeta):
     def _find_nested(self):
         names = []
         for field in self._fields:
-            if getattr(self._fields[field], "_optional_nested", None):
+            if getattr(self._fields[field], "_optional_nested", None) or \
+                    (isinstance(self._fields[field], fields.List) and
+                         getattr(self._fields[field].container, "_optional_nested", None)):
                 names.append(field)
+
         return names
 
     def _find_nested_all(self):
@@ -79,7 +82,10 @@ class FieldsetBase(object, metaclass=FieldsetMeta):
             names.append(name)
             nested_field = self._fields.get(name)
             if nested_field is not None:
-                nested_fieldset = nested_field.nested_fieldset()
+                if isinstance(nested_field, fields.List):
+                    nested_fieldset = nested_field.container.nested_fieldset()
+                else:
+                    nested_fieldset = nested_field.nested_fieldset()
                 if nested_fieldset is not None:
                     for nested_nest_field_name in nested_fieldset.nested_field_names:
                         names.append("%s.%s" % (name, nested_nest_field_name))
@@ -92,7 +98,10 @@ class FieldsetBase(object, metaclass=FieldsetMeta):
         for name in self._nested:
             nested_field = self._fields.get(name)
             if nested_field is not None:
-                nested_fieldset = nested_field.nested_fieldset()
+                if isinstance(nested_field, fields.List):
+                    nested_fieldset = nested_field.container.nested_fieldset()
+                else:
+                    nested_fieldset = nested_field.nested_fieldset()
                 if nested_fieldset is not None:
                     for nested_field_name in nested_fieldset.all_field_names:
                         names.append("%s.%s" % (name, nested_field_name))
@@ -194,10 +203,17 @@ class Fieldset(FieldsetBase):
         for field in fields_direct:
             if field in self._nested:
                 if field in embed_direct:
-                    nested_fieldset = self._fields[field].nested_fieldset()
-                    result_dict[field] = fields.Nested(nested_fieldset.marshall_dict(filtered_nested[field],
-                                                                                     filtered_embedd[field]),
-                                                       **self._fields[field].nested_kwargs())
+                    if isinstance(self._fields[field], fields.List):
+                        nested_fieldset = self._fields[field].container.nested_fieldset()
+                        result_dict[field] = fields.List(
+                            fields.Nested(nested_fieldset.marshall_dict(filtered_nested[field],
+                                                                        filtered_embedd[field]),
+                                          **self._fields[field].container.nested_kwargs()))
+                    else:
+                        nested_fieldset = self._fields[field].nested_fieldset()
+                        result_dict[field] = fields.Nested(nested_fieldset.marshall_dict(filtered_nested[field],
+                                                                                         filtered_embedd[field]),
+                                                           **self._fields[field].nested_kwargs())
                 else:
                     result_dict[field] = self._fields[field].key_field()
             else:
