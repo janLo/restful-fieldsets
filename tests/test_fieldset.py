@@ -13,6 +13,8 @@ def _convert_nested(mydict):
     for item in result:
         if hasattr(result[item], "nested"):
             result[item] = _convert_nested(result[item].nested)
+        elif isinstance(result[item], fields.List) and hasattr(result[item].container, "nested"):
+            result[item] = [_convert_nested(result[item].container.nested)]
 
     return result
 
@@ -523,9 +525,28 @@ class TestNestedFieldset(unittest.TestCase):
         self.assertListEqual(sorted(dummy.nested_field_names),
                              sorted(["test02", "test03", "test03.nest02", "test03.nest03"]))
 
+    def test_0070_list_of_nested(self):
+        class SimpleNestedFieldset(fieldset.Fieldset):
+            nest01 = fields.Integer
+            nest02 = fields.Boolean
+
+        class MyFieldSet(fieldset.Fieldset):
+            test01 = fields.Boolean
+            test02 = fields.List(fieldset.OptionalNestedField(SimpleNestedFieldset, None, None))
+
+        dummy = MyFieldSet()
+        to_check = _convert_nested(dummy.marshall_dict())
+
+        self.assertDictEqual(to_check, {"test01": MyFieldSet.test01,
+                                        "test02": [{"nest01": SimpleNestedFieldset.nest01,
+                                                   "nest02": SimpleNestedFieldset.nest02}]})
+        self.assertListEqual(sorted(dummy.all_field_names),
+                             sorted(["test01", "test02", "test02.nest01", "test02.nest02"]))
+        self.assertListEqual(sorted(dummy.nested_field_names),
+                             sorted(["test02"]))
 
 class TestFieldSetParser(unittest.TestCase):
-    def test_0010_test_suimple_working(self):
+    def test_0010_test_simple_working(self):
         instance = FieldSetParser(("a", "b", "c", "d"))
 
         self.assertIsNone(instance(""))
